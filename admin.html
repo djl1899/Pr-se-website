@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Galerie anlegen — Studio David</title>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .wrap { max-width: 780px; margin: 0 auto; padding: 44px 24px 90px; }
+  h1 { font-size: clamp(1.6rem,4vw,2.1rem); font-weight: 900; letter-spacing: -.02em; margin: 0 0 10px; }
+  .lead { color: var(--muted); line-height: 1.6; margin: 0 0 34px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; margin-bottom: 18px; }
+  .panel h2 { font-size: .74rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 18px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .row--full { grid-template-columns: 1fr; }
+  textarea {
+    width: 100%; min-height: 260px; font-family: ui-monospace, Menlo, monospace;
+    font-size: .8rem; line-height: 1.55; background: var(--bg); color: var(--text);
+    border: 1px solid var(--line); border-radius: var(--r-sm); padding: 14px; resize: vertical;
+  }
+  .files { color: var(--muted); font-size: .85rem; margin-top: 12px; }
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; }
+  .steps li { counter-increment: s; position: relative; padding-left: 38px; margin-bottom: 14px; color: #cfcfd6; font-size: .93rem; line-height: 1.6; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 0;
+    width: 25px; height: 25px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--accent);
+    font-size: .78rem; font-weight: 700;
+  }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+  @media (max-width: 620px) { .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand" style="margin-bottom:26px">
+    <svg class="logo" viewBox="0 0 34 34" fill="none" aria-label="Logo">
+      <circle cx="17" cy="17" r="9.5" stroke="currentColor" stroke-width="2.2"/>
+      <circle cx="17" cy="17" r="3.2" fill="currentColor"/>
+      <path d="M17 2.5v5M17 26.5v5M2.5 17h5M26.5 17h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <span class="brand__name">STUDIO DAVID · ADMIN</span>
+  </div>
+
+  <h1>Neue Event-Galerie anlegen</h1>
+  <p class="lead">Dieses Werkzeug läuft nur bei dir im Browser. Es erzeugt die fertigen Vorschaubilder
+    und den JSON-Block für <code>data/galleries.json</code>. Der Zugangscode wird als Hash gespeichert —
+    im Quellcode der Website steht er nie im Klartext.</p>
+
+  <div class="panel">
+    <h2>1 · Event-Daten</h2>
+    <div class="row">
+      <label class="field"><span class="field__label">Titel</span>
+        <input id="fTitle" class="field__input" placeholder="Hockenheim Trackday"></label>
+      <label class="field"><span class="field__label">Ordner-ID (klein, ohne Umlaute)</span>
+        <input id="fId" class="field__input" placeholder="hockenheim-2026"></label>
+      <label class="field"><span class="field__label">Datum</span>
+        <input id="fDate" class="field__input" type="date"></label>
+      <label class="field"><span class="field__label">Ort</span>
+        <input id="fLoc" class="field__input" placeholder="Hockenheimring"></label>
+      <label class="field"><span class="field__label">Zugangscode für den Kunden</span>
+        <input id="fCode" class="field__input" placeholder="HOCKENHEIM26"></label>
+      <label class="field"><span class="field__label">Bilder auswählen (bearbeitete JPEGs)</span>
+        <input id="fFiles" class="field__input" type="file" accept="image/jpeg,image/png" multiple></label>
+    </div>
+    <p class="files" id="fileInfo">Noch keine Bilder ausgewählt.</p>
+    <div class="actions">
+      <button id="buildBtn" class="btn btn--primary">Galerie erzeugen</button>
+      <button id="thumbBtn" class="btn btn--ghost" disabled>Vorschaubilder als ZIP</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>2 · JSON-Block</h2>
+    <textarea id="out" spellcheck="false" placeholder="Hier erscheint der Block, den du in data/galleries.json einfügst."></textarea>
+    <div class="actions">
+      <button id="copyBtn" class="btn btn--solid" disabled>JSON kopieren</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>3 · So kommt es online</h2>
+    <ol class="steps">
+      <li>Bearbeitete Bilder in den Ordner <code>images/</code> legen (Dateinamen exakt wie oben angezeigt).</li>
+      <li>Vorschaubilder-ZIP entpacken und die <code>-thumb.jpg</code>-Dateien ebenfalls in <code>images/</code> legen.</li>
+      <li>Den JSON-Block in <code>data/galleries.json</code> in die Liste <code>galleries</code> einfügen.</li>
+      <li>Projektordner kostenlos hosten (z. B. Netlify Drop, Cloudflare Pages oder GitHub Pages).</li>
+      <li>Kunden den Link plus Zugangscode schicken — oder direkt <code>?code=DEINCODE</code> an den Link hängen.</li>
+    </ol>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let files = [];
+
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, 2400);
+}
+
+async function sha256(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+const slug = (s) => s.toLowerCase()
+  .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+
+$('fFiles').addEventListener('change', (e) => {
+  files = [...e.target.files].sort((a, b) => a.name.localeCompare(b.name, 'de', { numeric: true }));
+  $('fileInfo').textContent = files.length
+    ? files.length + ' Bilder: ' + files.map(f => f.name).join(', ')
+    : 'Noch keine Bilder ausgewählt.';
+  $('thumbBtn').disabled = files.length === 0;
+});
+
+$('buildBtn').addEventListener('click', async () => {
+  const title = $('fTitle').value.trim();
+  const code = $('fCode').value.trim().replace(/\s+/g, '').toUpperCase();
+  if (!title || !code || !files.length) {
+    toast('Titel, Code und Bilder werden gebraucht');
+    return;
+  }
+  const id = slug($('fId').value.trim() || title);
+  const photos = files.map(f => {
+    const name = f.name.replace(/\.(jpe?g|png)$/i, '');
+    return {
+      file: 'images/' + name + '.jpg',
+      thumb: 'images/' + name + '-thumb.jpg',
+      title: name.replace(/[-_]+/g, ' ')
+    };
+  });
+
+  const entry = {
+    id,
+    title,
+    date: $('fDate').value || '',
+    location: $('fLoc').value.trim(),
+    cover: photos[0].file,
+    codeHash: await sha256(code),
+    photos
+  };
+
+  $('out').value = JSON.stringify(entry, null, 2);
+  $('copyBtn').disabled = false;
+  toast('JSON erzeugt — Code: ' + code);
+});
+
+$('copyBtn').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('out').value);
+  toast('In die Zwischenablage kopiert');
+});
+
+// Vorschaubilder (max. 700 px) direkt im Browser rendern und als ZIP speichern
+$('thumbBtn').addEventListener('click', async () => {
+  const zip = new JSZip();
+  $('thumbBtn').disabled = true;
+  $('thumbBtn').textContent = 'Erzeuge Vorschaubilder…';
+
+  for (const f of files) {
+    const bitmap = await createImageBitmap(f);
+    const scale = Math.min(1, 700 / Math.max(bitmap.width, bitmap.height));
+    const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8));
+    zip.file(f.name.replace(/\.(jpe?g|png)$/i, '') + '-thumb.jpg', blob);
+    bitmap.close();
+  }
+
+  const out = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(out);
+  a.download = 'vorschaubilder.zip';
+  a.click();
+  $('thumbBtn').textContent = 'Vorschaubilder als ZIP';
+  $('thumbBtn').disabled = false;
+  toast('Vorschaubilder gespeichert');
+});
+</script>
+</body>
+</html>
