@@ -1,0 +1,35 @@
+{
+  "studio": {
+    "name": "STUDIO DAVID",
+    "tagline": "Event- & Motorsportfotografie",
+    "contact": "hallo@studio-david.de"
+  },
+  "galleries": [
+    {
+      "id": "hockenheim-2026",
+      "title": "Hockenheim Trackday",
+      "date": "2026-08-22",
+      "location": "Hockenheimring",
+      "cover": "images/motorsport-01.jpg",
+      "codeHash": "a5004fb6e206fd400bc1ddc856ad880c32ad7444fce3d18cde7b548df5b969df",
+      "photos": [
+        { "file": "images/motorsport-01.jpg", "thumb": "images/motorsport-01-thumb.jpg", "title": "Panning Shot – Start/Ziel" },
+        { "file": "images/motorsport-02.jpg", "thumb": "images/motorsport-02-thumb.jpg", "title": "Paddock – Setup" },
+        { "file": "images/motorsport-03.jpg", "thumb": "images/motorsport-03-thumb.jpg", "title": "Frontflügel Detail" }
+      ]
+    },
+    {
+      "id": "nachtfahrt-2026",
+      "title": "Nachtfahrt Festival",
+      "date": "2026-07-12",
+      "location": "Landau in der Pfalz",
+      "cover": "images/festival-01.jpg",
+      "codeHash": "1547ddaab2f7ef78a1b67095308c27600a7aad11b441af5f5cb65f160260fa8c",
+      "photos": [
+        { "file": "images/festival-01.jpg", "thumb": "images/festival-01-thumb.jpg", "title": "Mainstage – Crowd" },
+        { "file": "images/festival-02.jpg", "thumb": "images/festival-02-thumb.jpg", "title": "Booth – Closing Set" },
+        { "file": "images/festival-03.jpg", "thumb": "images/festival-03-thumb.jpg", "title": "Golden Hour" }
+      ]
+    }
+  ]
+}
