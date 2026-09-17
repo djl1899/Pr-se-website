@@ -3,36 +3,18 @@
     "name": "LAIERDAVID",
     "contact": "davidlaier@outlook.de"
   },
-
-  "quelle": {
-    "typ": "manuell",
-    "owner": "DEIN-GITHUB-NAME",
-    "repo": "galerie",
-    "branch": "main",
-    "fotosOrdner": "fotos"
-  },
-
   "galleries": [
     {
       "id": "sommerparty26",
       "title": "Sommerparty26",
       "date": "2026-07-12",
       "location": "Landau in der Pfalz",
+      "cover": "images/festival-01.jpg",
       "codeHash": "add116af962593868fae05e8af69bbe04e84afeffb5684560e8e92de422d8e96",
-      "fotos": [
-        "fotos/sommerparty26/01-mainstage.jpg",
-        "fotos/sommerparty26/02-booth.jpg",
-        "fotos/sommerparty26/03-golden-hour.jpg",
-        "fotos/sommerparty26/04-crowd-hoch.jpg"
-      ]
-    },
-    {
-      "id": "alexweinlounge",
-      "title": "Alexweinlounge",
-      "date": "2026-09-17",
-      "location": "Herxheim am Berg",
-      "codeHash": "6ce79b617cdb37df5c048157b7934d931a7d9da985bce1ed560b5ee88af800a1",
-      "fotos": [
+      "photos": [
+        { "file": "images/festival-01.jpg", "thumb": "images/festival-01-thumb.jpg", "title": "Mainstage – Crowd" },
+        { "file": "images/festival-02.jpg", "thumb": "images/festival-02-thumb.jpg", "title": "Booth – Closing Set" },
+        { "file": "images/festival-03.jpg", "thumb": "images/festival-03-thumb.jpg", "title": "Golden Hour" }
       ]
     }
   ]
