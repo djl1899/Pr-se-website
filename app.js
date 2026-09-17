@@ -1,22 +1,14 @@
 /* =========================================================
    Laierdavid — Eventgalerie
    Reines Frontend (HTML/CSS/JS), kein Server nötig.
-
-   Ablauf: Code eingeben -> passende Galerie laden -> Fotos
+   Ablauf: Code eingeben -> passende Galerie laden -> Bilder
    einzeln, als Auswahl oder komplett als ZIP herunterladen.
-
-   Zwei Betriebsarten (siehe data/galleries.json -> "quelle"):
-   A) "manuell"  – die Dateiliste steht in galleries.json
-   B) "github"   – die Dateien werden automatisch aus dem
-                   Ordner fotos/<id>/ gelesen. Du lädst also
-                   nur hoch, sonst nichts.
    ========================================================= */
 
 const state = {
-  data: null,          // Inhalt von data/galleries.json
-  gallery: null,       // aktuell geöffnete Galerie
-  items: [],           // Fotos: { url, name, titel }
-  selected: new Set()  // Indizes der ausgewählten Fotos
+  data: null,        // Inhalt von data/galleries.json
+  gallery: null,     // aktuell geöffnete Galerie
+  selected: new Set()// Indizes der ausgewählten Bilder
 };
 
 const $ = (id) => document.getElementById(id);
@@ -25,8 +17,6 @@ const $ = (id) => document.getElementById(id);
 // Galerie nicht schließt, wird er zusätzlich in die Adresszeile geschrieben
 // (?code=…) — genau der Link, den der Kunde sowieso bekommt.
 let activeCode = null;
-
-const FOTO_EXT = /\.(jpe?g|png|webp|avif)$/i;
 
 /* ---------------------------------------------------------
    Hilfsfunktionen
@@ -44,16 +34,6 @@ function formatDate(iso) {
   if (!iso) return '';
   const d = new Date(iso + 'T12:00:00');
   return d.toLocaleDateString('de-DE', { day: '2-digit', month: 'long', year: 'numeric' });
-}
-
-// "04-crowd-hoch.jpg" -> "Crowd hoch"
-function titleFromName(name) {
-  return name
-    .replace(/\.[a-z0-9]+$/i, '')
-    .replace(/^\d+[-_ ]*/, '')
-    .replace(/[-_]+/g, ' ')
-    .trim()
-    .replace(/^./, c => c.toUpperCase());
 }
 
 function toast(msg, ms = 2600) {
@@ -86,47 +66,15 @@ async function loadData() {
     $('footBrand').textContent = studio.name;
     document.title = studio.name + ' — Eventgalerie';
   }
+  if (studio.tagline) {
+    $('brandTagline').textContent =
+      studio.tagline + ' — gib den Zugangscode aus deiner Nachricht ein.';
+  }
   if (studio.contact) {
     $('footContact').innerHTML =
       'Fragen oder ein anderes Format? <a href="mailto:' + studio.contact +
       '" style="color:var(--accent)">' + studio.contact + '</a>';
   }
-}
-
-/* ---------------------------------------------------------
-   Fotos einer Galerie zusammenstellen
-   --------------------------------------------------------- */
-function toItem(url) {
-  const name = decodeURIComponent(String(url).split('/').pop().split('?')[0]);
-  return { url, name, titel: titleFromName(name) };
-}
-
-// Betriebsart B: Ordnerinhalt über die öffentliche GitHub-API lesen.
-async function listGithubFolder(q, folder) {
-  const api = 'https://api.github.com/repos/' + q.owner + '/' + q.repo +
-              '/contents/' + folder + '?ref=' + (q.branch || 'main');
-  const res = await fetch(api, { headers: { Accept: 'application/vnd.github+json' } });
-  if (!res.ok) return [];
-  const list = await res.json();
-  if (!Array.isArray(list)) return [];
-  return list
-    .filter(f => f.type === 'file')
-    .sort((a, b) => a.name.localeCompare(b.name, 'de', { numeric: true }))
-    .map(f => f.download_url);
-}
-
-async function collectItems(gallery) {
-  const q = state.data.quelle || {};
-
-  if (q.typ === 'github' && q.owner && q.repo) {
-    const ordner = (q.fotosOrdner || 'fotos') + '/' + gallery.id;
-    const dateien = await listGithubFolder(q, ordner).catch(() => []);
-    const items = dateien.filter(u => FOTO_EXT.test(u)).map(toItem);
-    if (items.length) return items;
-    // Wenn die API nichts liefert (z. B. Limit erreicht), auf die Liste zurückfallen.
-  }
-
-  return (gallery.fotos || []).map(toItem);
 }
 
 /* ---------------------------------------------------------
@@ -156,11 +104,11 @@ async function tryUnlock(rawCode, { silent = false } = {}) {
     url.searchParams.set('code', code);
     history.replaceState(null, '', url);
   } catch (e) { /* egal, rein kosmetisch */ }
-  await openGallery(gallery);
+  openGallery(gallery);
   return true;
 }
 
-async function openGallery(gallery) {
+function openGallery(gallery) {
   state.gallery = gallery;
   state.selected.clear();
 
@@ -171,9 +119,6 @@ async function openGallery(gallery) {
   $('gate').hidden = true;
   $('app').hidden = false;
   $('year').textContent = new Date().getFullYear();
-
-  $('grid').innerHTML = '<p class="grid__empty">Fotos werden geladen…</p>';
-  state.items = await collectItems(gallery);
 
   renderGrid();
   updateToolbar();
@@ -188,7 +133,6 @@ function logout() {
     history.replaceState(null, '', url);
   } catch (e) { /* egal */ }
   state.gallery = null;
-  state.items = [];
   state.selected.clear();
   $('app').hidden = true;
   $('gate').hidden = false;
@@ -198,80 +142,46 @@ function logout() {
 }
 
 /* ---------------------------------------------------------
-   2) Raster aufbauen (echtes Masonry: Hoch- und Querformat
-      passen sich automatisch ein, Reihenfolge bleibt korrekt)
+   2) Raster aufbauen
    --------------------------------------------------------- */
 const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
 const ICON_DL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg>';
-
-// Zeilenhöhe und Abstand kommen direkt aus dem Stylesheet (auch mobil korrekt).
-function gridMetrics() {
-  const cs = getComputedStyle($('grid'));
-  return {
-    row: parseFloat(cs.gridAutoRows) || 8,
-    gap: parseFloat(cs.rowGap) || 18
-  };
-}
-
-// Kartenhöhe aus dem Seitenverhältnis des Fotos ableiten.
-function sizeCard(card, ratio) {
-  if (!ratio || !isFinite(ratio)) return;
-  const w = card.getBoundingClientRect().width;
-  if (!w) return;
-  const { row, gap } = gridMetrics();
-  const h = w / ratio;
-  card.style.gridRowEnd = 'span ' + Math.max(6, Math.round((h + gap) / (row + gap)));
-  card.dataset.ratio = ratio;
-}
-
-function relayout() {
-  document.querySelectorAll('.card').forEach(c => sizeCard(c, parseFloat(c.dataset.ratio)));
-}
 
 function renderGrid() {
   const grid = $('grid');
   grid.innerHTML = '';
 
-  if (!state.items.length) {
-    grid.innerHTML = '<p class="grid__empty">Hier ist noch nichts drin.</p>';
-    return;
-  }
-
-  state.items.forEach((it, i) => {
+  state.gallery.photos.forEach((photo, i) => {
     const card = document.createElement('article');
     card.className = 'card';
     card.dataset.index = i;
-    card.style.gridRowEnd = 'span 26';   // Startwert, bis das Format bekannt ist
-    if (state.selected.has(i)) card.classList.add('is-selected');
 
     const img = document.createElement('img');
-    img.className = 'card__media';
+    img.className = 'card__img';
     img.loading = 'lazy';
     img.decoding = 'async';
-    img.alt = it.titel;
-    img.src = it.url;
-    img.addEventListener('load', () => {
-      img.classList.add('is-loaded');
-      sizeCard(card, img.naturalWidth / img.naturalHeight);
-    });
+    img.alt = photo.title || 'Eventfoto ' + (i + 1);
+    img.src = photo.thumb || photo.file;
+    img.addEventListener('load', () => img.classList.add('is-loaded'));
 
     const check = document.createElement('button');
     check.className = 'check';
     check.type = 'button';
     check.title = 'Auswählen';
-    check.setAttribute('aria-label', 'Auswählen');
+    check.setAttribute('aria-label', 'Bild auswählen');
     check.innerHTML = ICON_CHECK;
     check.addEventListener('click', (e) => { e.stopPropagation(); toggleSelect(i); });
 
     const overlay = document.createElement('div');
     overlay.className = 'card__overlay';
-    overlay.innerHTML = '<span class="card__title">' + it.titel + '</span>';
+    overlay.innerHTML = '<span class="card__title">' +
+      (photo.title || 'Bild ' + (i + 1)) + '</span>';
 
     const dl = document.createElement('button');
     dl.className = 'icon-btn';
     dl.type = 'button';
-    dl.title = 'Dieses Foto herunterladen';
-    dl.setAttribute('aria-label', 'Dieses Foto herunterladen');
+    dl.title = 'Dieses Bild herunterladen';
+    dl.setAttribute('aria-label', 'Dieses Bild herunterladen');
     dl.innerHTML = ICON_DL;
     dl.addEventListener('click', (e) => { e.stopPropagation(); downloadSingle(i); });
     overlay.appendChild(dl);
@@ -291,21 +201,24 @@ function toggleSelect(i) {
 }
 
 function updateToolbar() {
-  const total = state.items.length;
+  const total = state.gallery.photos.length;
   const sel = state.selected.size;
-  $('countInfo').textContent = total
-    ? total + (total === 1 ? ' Foto' : ' Fotos')
-    : 'Noch keine Fotos';
+  $('countInfo').textContent = total + (total === 1 ? ' Bild' : ' Bilder');
   $('selInfo').textContent = sel + ' ausgewählt';
   $('dlSelBtn').disabled = sel === 0;
   $('clearSelBtn').disabled = sel === 0;
   $('dlSelBtn').textContent = sel > 0 ? 'Auswahl laden (' + sel + ')' : 'Auswahl als ZIP';
-  $('selectAllBtn').textContent = (total && sel === total) ? 'Auswahl umkehren' : 'Alle auswählen';
+  $('selectAllBtn').textContent = sel === total ? 'Auswahl umkehren' : 'Alle auswählen';
 }
 
 /* ---------------------------------------------------------
    3) Downloads
    --------------------------------------------------------- */
+function fileNameOf(photo, i) {
+  const base = photo.file.split('/').pop();
+  return base || 'bild-' + (i + 1) + '.jpg';
+}
+
 function saveBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -317,23 +230,24 @@ function saveBlob(blob, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 
-// Einzelnes Foto: als Blob laden, damit der Browser sicher speichert (statt zu öffnen).
+// Einzelnes Bild: als Blob laden, damit der Browser sicher speichert (statt zu öffnen).
 async function downloadSingle(i) {
-  const it = state.items[i];
+  const photo = state.gallery.photos[i];
   try {
-    const res = await fetch(it.url);
+    const res = await fetch(photo.file);
     if (!res.ok) throw new Error(res.status);
-    saveBlob(await res.blob(), it.name);
-    toast('Foto gespeichert');
+    saveBlob(await res.blob(), fileNameOf(photo, i));
+    toast('Bild gespeichert');
   } catch (err) {
-    const a = document.createElement('a');   // Fallback, falls fetch blockiert wird
-    a.href = it.url;
-    a.download = it.name;
+    // Fallback, falls fetch blockiert wird
+    const a = document.createElement('a');
+    a.href = photo.file;
+    a.download = fileNameOf(photo, i);
     a.click();
   }
 }
 
-// Mehrere Fotos: gesammelt in eine ZIP-Datei.
+// Mehrere Bilder: gesammelt in eine ZIP-Datei.
 async function downloadZip(indices, zipName) {
   if (!indices.length) return;
   if (typeof JSZip === 'undefined') {
@@ -341,22 +255,22 @@ async function downloadZip(indices, zipName) {
     return;
   }
 
-  showProgress('Fotos werden gesammelt… (0/' + indices.length + ')');
+  showProgress('Bilder werden gesammelt… (0/' + indices.length + ')');
   const zip = new JSZip();
   let done = 0, failed = 0;
 
   for (const i of indices) {
-    const it = state.items[i];
+    const photo = state.gallery.photos[i];
     try {
-      const res = await fetch(it.url);
+      const res = await fetch(photo.file);
       if (!res.ok) throw new Error(res.status);
-      zip.file(it.name, await res.blob());
+      zip.file(fileNameOf(photo, i), await res.blob());
     } catch (err) {
       failed++;
     }
     done++;
     $('progressLabel').textContent =
-      'Fotos werden gesammelt… (' + done + '/' + indices.length + ')';
+      'Bilder werden gesammelt… (' + done + '/' + indices.length + ')';
     setProgress((done / indices.length) * 70);
   }
 
@@ -369,8 +283,8 @@ async function downloadZip(indices, zipName) {
   saveBlob(blob, zipName);
   hideProgress();
   toast(failed
-    ? (indices.length - failed) + ' Fotos gepackt, ' + failed + ' fehlgeschlagen'
-    : 'ZIP mit ' + indices.length + ' Fotos gespeichert');
+    ? (indices.length - failed) + ' Bilder gepackt, ' + failed + ' fehlgeschlagen'
+    : 'ZIP mit ' + indices.length + ' Bildern gespeichert');
 }
 
 const zipBaseName = () =>
@@ -383,10 +297,11 @@ let lbIndex = 0;
 
 function openLightbox(i) {
   lbIndex = i;
-  const it = state.items[i];
-  $('lbImg').src = it.url;
-  $('lbImg').alt = it.titel;
-  $('lbCap').textContent = it.titel + '  ·  ' + (i + 1) + ' / ' + state.items.length;
+  const photo = state.gallery.photos[i];
+  $('lbImg').src = photo.file;
+  $('lbImg').alt = photo.title || 'Eventfoto';
+  $('lbCap').textContent =
+    (photo.title || '') + '  ·  ' + (i + 1) + ' / ' + state.gallery.photos.length;
   $('lightbox').hidden = false;
   document.body.style.overflow = 'hidden';
   updateLightboxSelectLabel();
@@ -398,8 +313,7 @@ function closeLightbox() {
 }
 
 function stepLightbox(dir) {
-  const n = state.items.length;
-  if (!n) return;
+  const n = state.gallery.photos.length;
   openLightbox((lbIndex + dir + n) % n);
 }
 
@@ -420,9 +334,9 @@ function wire() {
   $('logoutBtn').addEventListener('click', logout);
 
   $('selectAllBtn').addEventListener('click', () => {
-    const alle = state.items.length > 0 && state.selected.size === state.items.length;
-    if (alle) state.selected.clear();
-    else state.items.forEach((_, i) => state.selected.add(i));
+    const total = state.gallery.photos.length;
+    if (state.selected.size === total) state.selected.clear();
+    else state.gallery.photos.forEach((_, i) => state.selected.add(i));
     document.querySelectorAll('.card').forEach(c =>
       c.classList.toggle('is-selected', state.selected.has(+c.dataset.index)));
     updateToolbar();
@@ -439,7 +353,8 @@ function wire() {
       zipBaseName() + '_auswahl.zip'));
 
   $('dlAllBtn').addEventListener('click', () =>
-    downloadZip(state.items.map((_, i) => i), zipBaseName() + '_alle.zip'));
+    downloadZip(state.gallery.photos.map((_, i) => i),
+      zipBaseName() + '_alle.zip'));
 
   $('lbClose').addEventListener('click', closeLightbox);
   $('lbPrev').addEventListener('click', () => stepLightbox(-1));
@@ -455,12 +370,6 @@ function wire() {
     if (e.key === 'Escape') closeLightbox();
     if (e.key === 'ArrowLeft') stepLightbox(-1);
     if (e.key === 'ArrowRight') stepLightbox(1);
-  });
-
-  let resizeTimer;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(relayout, 120);
   });
 }
 
