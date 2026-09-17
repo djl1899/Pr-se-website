@@ -3,18 +3,31 @@
     "name": "LAIERDAVID",
     "contact": "davidlaier@outlook.de"
   },
+
+  "quelle": {
+    "typ": "manuell",
+    "owner": "DEIN-GITHUB-NAME",
+    "repo": "galerie",
+    "branch": "main",
+    "fotosOrdner": "fotos",
+    "videosOrdner": "videos"
+  },
+
   "galleries": [
     {
       "id": "sommerparty26",
       "title": "Sommerparty26",
-      "date": "2026-09-19",
-      "location": "Altlussheim Tennis Verein",
-      "cover": "images/festival-01.jpg",
+      "date": "2026-07-12",
+      "location": "Landau in der Pfalz",
       "codeHash": "add116af962593868fae05e8af69bbe04e84afeffb5684560e8e92de422d8e96",
-      "photos": [
-        { "file": "images/festival-01.jpg", "thumb": "images/festival-01-thumb.jpg", "title": "Mainstage – Crowd" },
-        { "file": "images/festival-02.jpg", "thumb": "images/festival-02-thumb.jpg", "title": "Booth – Closing Set" },
-        { "file": "images/festival-03.jpg", "thumb": "images/festival-03-thumb.jpg", "title": "Golden Hour" }
+      "fotos": [
+        "fotos/sommerparty26/01-mainstage.jpg",
+        "fotos/sommerparty26/02-booth.jpg",
+        "fotos/sommerparty26/03-golden-hour.jpg",
+        "fotos/sommerparty26/04-crowd-hoch.jpg"
+      ],
+      "videos": [
+        "videos/sommerparty26/01-aftermovie.mp4"
       ]
     }
   ]
