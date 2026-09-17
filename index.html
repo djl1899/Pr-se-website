@@ -60,9 +60,14 @@
 
   <div class="toolbar">
     <div class="toolbar__info">
-      <span id="countInfo">0 Bilder</span>
+      <span id="countInfo">wird geladen…</span>
       <span class="dot">·</span>
       <span id="selInfo">0 ausgewählt</span>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Ansicht">
+      <button class="tab is-active" data-filter="alle" type="button" hidden>Alle</button>
+      <button class="tab" data-filter="fotos" type="button" hidden>Fotos</button>
+      <button class="tab" data-filter="videos" type="button" hidden>Videos</button>
     </div>
     <div class="toolbar__actions">
       <button id="selectAllBtn" class="btn btn--ghost">Alle auswählen</button>
@@ -83,15 +88,16 @@
 <!-- ============ 3. LIGHTBOX ============ -->
 <div id="lightbox" class="lb" hidden>
   <button class="lb__close" id="lbClose" aria-label="Schließen">&times;</button>
-  <button class="lb__nav lb__nav--prev" id="lbPrev" aria-label="Vorheriges Bild">&#8249;</button>
+  <button class="lb__nav lb__nav--prev" id="lbPrev" aria-label="Vorheriges Medium">&#8249;</button>
   <figure class="lb__stage">
     <img id="lbImg" alt="">
+    <video id="lbVideo" controls playsinline preload="metadata" hidden></video>
     <figcaption id="lbCap"></figcaption>
   </figure>
-  <button class="lb__nav lb__nav--next" id="lbNext" aria-label="Nächstes Bild">&#8250;</button>
+  <button class="lb__nav lb__nav--next" id="lbNext" aria-label="Nächstes Medium">&#8250;</button>
   <div class="lb__bar">
     <button id="lbSelect" class="btn btn--ghost">Auswählen</button>
-    <button id="lbDownload" class="btn btn--primary">Dieses Bild laden</button>
+    <button id="lbDownload" class="btn btn--primary">Dieses Foto laden</button>
   </div>
 </div>
 

@@ -62,13 +62,13 @@
         <input id="fLoc" class="field__input" placeholder="Hockenheimring"></label>
       <label class="field"><span class="field__label">Zugangscode für den Kunden</span>
         <input id="fCode" class="field__input" placeholder="HOCKENHEIM26"></label>
-      <label class="field"><span class="field__label">Bilder auswählen (bearbeitete JPEGs)</span>
-        <input id="fFiles" class="field__input" type="file" accept="image/jpeg,image/png" multiple></label>
+      <label class="field"><span class="field__label">Fotos und Videos auswählen</span>
+        <input id="fFiles" class="field__input" type="file" accept="image/jpeg,image/png,video/mp4,video/quicktime" multiple></label>
     </div>
-    <p class="files" id="fileInfo">Noch keine Bilder ausgewählt.</p>
+    <p class="files" id="fileInfo">Noch keine Dateien ausgewählt.</p>
     <div class="actions">
       <button id="buildBtn" class="btn btn--primary">Galerie erzeugen</button>
-      <button id="thumbBtn" class="btn btn--ghost" disabled>Vorschaubilder als ZIP</button>
+      <button id="thumbBtn" class="btn btn--ghost" disabled>Fotos web-optimiert als ZIP</button>
     </div>
   </div>
 
@@ -83,10 +83,10 @@
   <div class="panel">
     <h2>3 · So kommt es online</h2>
     <ol class="steps">
-      <li>Bearbeitete Bilder in den Ordner <code>images/</code> legen (Dateinamen exakt wie oben angezeigt).</li>
-      <li>Vorschaubilder-ZIP entpacken und die <code>-thumb.jpg</code>-Dateien ebenfalls in <code>images/</code> legen.</li>
+      <li>Fotos in den Ordner <code>fotos/GALERIE-ID/</code> legen, Videos in <code>videos/GALERIE-ID/</code> — die ID steht oben.</li>
+      <li>Optional die web-optimierte ZIP entpacken und diese Fotos statt der Originale hochladen (schnellere Ladezeit).</li>
       <li>Den JSON-Block in <code>data/galleries.json</code> in die Liste <code>galleries</code> einfügen.</li>
-      <li>Projektordner kostenlos hosten (z. B. Netlify Drop, Cloudflare Pages oder GitHub Pages).</li>
+      <li>Im Automatikmodus (<code>quelle.typ = "github"</code>) genügt das Hochladen — die Listen im JSON sind dann nur Reserve.</li>
       <li>Kunden den Link plus Zugangscode schicken — oder direkt <code>?code=DEINCODE</code> an den Link hängen.</li>
     </ol>
   </div>
@@ -98,6 +98,8 @@
 <script>
 const $ = (id) => document.getElementById(id);
 let files = [];
+const isFoto  = (f) => /\.(jpe?g|png|webp|avif)$/i.test(f.name);
+const isVideo = (f) => /\.(mp4|mov|m4v|webm)$/i.test(f.name);
 
 function toast(msg) {
   const t = $('toast'); t.textContent = msg; t.hidden = false;
@@ -116,36 +118,30 @@ const slug = (s) => s.toLowerCase()
 $('fFiles').addEventListener('change', (e) => {
   files = [...e.target.files].sort((a, b) => a.name.localeCompare(b.name, 'de', { numeric: true }));
   $('fileInfo').textContent = files.length
-    ? files.length + ' Bilder: ' + files.map(f => f.name).join(', ')
-    : 'Noch keine Bilder ausgewählt.';
-  $('thumbBtn').disabled = files.length === 0;
+    ? files.length + ' Dateien: ' + files.map(f => f.name).join(', ')
+    : 'Noch keine Dateien ausgewählt.';
+  $('thumbBtn').disabled = !files.some(isFoto);
 });
 
 $('buildBtn').addEventListener('click', async () => {
   const title = $('fTitle').value.trim();
   const code = $('fCode').value.trim().replace(/\s+/g, '').toUpperCase();
   if (!title || !code || !files.length) {
-    toast('Titel, Code und Bilder werden gebraucht');
+    toast('Titel, Code und Dateien werden gebraucht');
     return;
   }
   const id = slug($('fId').value.trim() || title);
-  const photos = files.map(f => {
-    const name = f.name.replace(/\.(jpe?g|png)$/i, '');
-    return {
-      file: 'images/' + name + '.jpg',
-      thumb: 'images/' + name + '-thumb.jpg',
-      title: name.replace(/[-_]+/g, ' ')
-    };
-  });
+  const fotos  = files.filter(isFoto).map(f => 'fotos/' + id + '/' + f.name);
+  const videos = files.filter(isVideo).map(f => 'videos/' + id + '/' + f.name);
 
   const entry = {
     id,
     title,
     date: $('fDate').value || '',
     location: $('fLoc').value.trim(),
-    cover: photos[0].file,
     codeHash: await sha256(code),
-    photos
+    fotos,
+    videos
   };
 
   $('out').value = JSON.stringify(entry, null, 2);
@@ -162,28 +158,28 @@ $('copyBtn').addEventListener('click', async () => {
 $('thumbBtn').addEventListener('click', async () => {
   const zip = new JSZip();
   $('thumbBtn').disabled = true;
-  $('thumbBtn').textContent = 'Erzeuge Vorschaubilder…';
+  $('thumbBtn').textContent = 'Fotos werden verkleinert…';
 
-  for (const f of files) {
+  for (const f of files.filter(isFoto)) {
     const bitmap = await createImageBitmap(f);
-    const scale = Math.min(1, 700 / Math.max(bitmap.width, bitmap.height));
+    const scale = Math.min(1, 2000 / Math.max(bitmap.width, bitmap.height));
     const w = Math.round(bitmap.width * scale), h = Math.round(bitmap.height * scale);
     const canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
-    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.8));
-    zip.file(f.name.replace(/\.(jpe?g|png)$/i, '') + '-thumb.jpg', blob);
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.86));
+    zip.file(f.name.replace(/\.(jpe?g|png|webp|avif)$/i, '') + '.jpg', blob);
     bitmap.close();
   }
 
   const out = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(out);
-  a.download = 'vorschaubilder.zip';
+  a.download = 'fotos-web.zip';
   a.click();
-  $('thumbBtn').textContent = 'Vorschaubilder als ZIP';
+  $('thumbBtn').textContent = 'Fotos web-optimiert als ZIP';
   $('thumbBtn').disabled = false;
-  toast('Vorschaubilder gespeichert');
+  toast('Web-Fotos gespeichert');
 });
 </script>
 </body>
