@@ -9,8 +9,7 @@
     "owner": "DEIN-GITHUB-NAME",
     "repo": "galerie",
     "branch": "main",
-    "fotosOrdner": "fotos",
-    "videosOrdner": "videos"
+    "fotosOrdner": "fotos"
   },
 
   "galleries": [
@@ -25,9 +24,15 @@
         "fotos/sommerparty26/02-booth.jpg",
         "fotos/sommerparty26/03-golden-hour.jpg",
         "fotos/sommerparty26/04-crowd-hoch.jpg"
-      ],
-      "videos": [
-        "videos/sommerparty26/01-aftermovie.mp4"
+      ]
+    },
+    {
+      "id": "alexweinlounge",
+      "title": "Alexweinlounge",
+      "date": "2026-09-17",
+      "location": "Herxheim am Berg",
+      "codeHash": "6ce79b617cdb37df5c048157b7934d931a7d9da985bce1ed560b5ee88af800a1",
+      "fotos": [
       ]
     }
   ]
